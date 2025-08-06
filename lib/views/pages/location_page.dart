@@ -98,10 +98,10 @@ class _LocationPageState extends State<LocationPage> {
     });
   }
 
-  void _useSelectedLocation() {
+  Future<void> _useSelectedLocation() async {
     // Update weather provider with selected location
     final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
-    weatherProvider.updateLocation([
+    await weatherProvider.updateLocation([
       _selectedLocation.latitude.toString(),
       _selectedLocation.longitude.toString(),
     ]);

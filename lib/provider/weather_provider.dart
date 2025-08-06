@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import '../services/geocoding_service.dart';
 
 class WeatherProvider with ChangeNotifier {
   WeatherProvider._internal();
@@ -13,11 +14,13 @@ class WeatherProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   List<String> _currentLocation = ['-37.814', '144.9633']; // Default Melbourne
+  String _currentCityName = 'Melbourne'; // Default city name
 
   CurrentWeather? get currentWeather => _currentWeather;
   List<DailyWeather>? get forecast => _forecast;
   bool get isLoading => _isLoading;
   List<String> get currentLocation => _currentLocation;
+  String get currentCityName => _currentCityName;
   String? get errorMessage => _errorMessage;
 
   void _setLoading(bool loading) {
@@ -30,8 +33,20 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateLocation(List<String> newLocation) {
+  Future<void> updateLocation(List<String> newLocation) async {
     _currentLocation = newLocation;
+    
+    // Fetch city name using reverse geocoding
+    try {
+      final cityName = await GeocodingService.getCityFromCoordinates(
+        double.parse(newLocation[0]),
+        double.parse(newLocation[1]),
+      );
+      _currentCityName = cityName ?? 'Unknown Location';
+    } catch (e) {
+      _currentCityName = 'Unknown Location';
+    }
+    
     notifyListeners();
     fetchWeatherData(_currentLocation);
   }
@@ -65,10 +80,12 @@ class WeatherProvider with ChangeNotifier {
         throw Exception("Data fetch failed: $errorMsg");
       }
       print('Response data keys: ${data.keys}');
-      _parseWeatherData(data, "Current Location");
+      _parseWeatherData(data, _currentCityName);
+      return data;
     } else {
       throw Exception("HTTP error: ${response.statusCode}");
     }
+    return null;
   }
 
   void _parseWeatherData(Map<String, dynamic> data, String location) {
