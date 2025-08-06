@@ -99,15 +99,24 @@ class _LocationPageState extends State<LocationPage> {
   }
 
   void _useSelectedLocation() {
+    // Update weather provider with selected location
+    final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
+    weatherProvider.updateLocation([
+      _selectedLocation.latitude.toString(),
+      _selectedLocation.longitude.toString(),
+    ]);
+    
     // Show selected location info
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Selected: ${_selectedLocation.latitude.toStringAsFixed(4)}, ${_selectedLocation.longitude.toStringAsFixed(4)}',
+          'Location updated: ${_selectedLocation.latitude.toStringAsFixed(4)}, ${_selectedLocation.longitude.toStringAsFixed(4)}',
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.green,
       ),
     );
+
+    // Navigator.of(context).pop();
   }
 
   @override
@@ -132,7 +141,7 @@ class _LocationPageState extends State<LocationPage> {
             markers: _markers,
             onTap: _onMapTap,
             myLocationEnabled: true,
-            myLocationButtonEnabled: false, // We'll add our own button
+            myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
 

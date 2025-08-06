@@ -15,7 +15,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Timer? _weatherTimer;
   static const _refreshInterval = Duration(seconds: 60);
-  static const _melbourneCoords = ['-37.814', '144.9633'];
 
   @override
   void initState() {
@@ -37,8 +36,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _fetchWeatherData() {
-    Provider.of<WeatherProvider>(context, listen: false)
-        .fetchWeatherData(_melbourneCoords);
+    final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
+    weatherProvider.fetchWeatherData(weatherProvider.currentLocation);
   }
 
   @override

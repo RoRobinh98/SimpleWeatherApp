@@ -12,12 +12,12 @@ class WeatherProvider with ChangeNotifier {
   List<DailyWeather>? _forecast;
   bool _isLoading = false;
   String? _errorMessage;
-  // String? _currentLocation;
+  List<String> _currentLocation = ['-37.814', '144.9633']; // Default Melbourne
 
   CurrentWeather? get currentWeather => _currentWeather;
   List<DailyWeather>? get forecast => _forecast;
   bool get isLoading => _isLoading;
-  // String? get currentLocation => _currentLocation;
+  List<String> get currentLocation => _currentLocation;
   String? get errorMessage => _errorMessage;
 
   void _setLoading(bool loading) {
@@ -28,6 +28,12 @@ class WeatherProvider with ChangeNotifier {
   void _setError(String? error) {
     _errorMessage = error;
     notifyListeners();
+  }
+
+  void updateLocation(List<String> newLocation) {
+    _currentLocation = newLocation;
+    notifyListeners();
+    fetchWeatherData(_currentLocation);
   }
 
   Future<void> fetchWeatherData(List<String> location) async {
@@ -42,9 +48,6 @@ class WeatherProvider with ChangeNotifier {
     }
   }
 
-
-  static final String weatherURL = 'https://api.open-meteo.com/v1/forecast?latitude=-37.814&longitude=144.9633&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&timezone=auto';
-
   Future<Map<String, dynamic>?> _getWeatherData(List<String> location) async {
     final url = _buildApiUrl(location);
     print('Fetching weather from: $url');
@@ -54,7 +57,7 @@ class WeatherProvider with ChangeNotifier {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-    ).timeout(Duration(seconds: 2));
+    ).timeout(Duration(seconds: 5));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       if (data.containsKey("error") && data['error'] == true) {
@@ -62,7 +65,7 @@ class WeatherProvider with ChangeNotifier {
         throw Exception("Data fetch failed: $errorMsg");
       }
       print('Response data keys: ${data.keys}');
-      _parseWeatherData(data, "Melbourne");
+      _parseWeatherData(data, "Current Location");
     } else {
       throw Exception("HTTP error: ${response.statusCode}");
     }
